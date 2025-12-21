@@ -13,7 +13,6 @@
 
     <modules>
         <module>triangle</module>
-        <module>api-testing</module>
     </modules>
 
     <properties>
