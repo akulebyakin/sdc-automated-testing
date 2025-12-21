@@ -3,7 +3,6 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 .kotlin
-.allure/
 
 ### IntelliJ IDEA ###
 .idea/modules.xml
