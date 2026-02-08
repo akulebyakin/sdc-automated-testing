@@ -43,6 +43,9 @@
         <!-- Reporting -->
         <allure.version>2.25.0</allure.version>
         <aspectj.version>1.9.21</aspectj.version>
+
+        <!-- BDD -->
+        <cucumber.version>7.15.0</cucumber.version>
     </properties>
 
     <dependencyManagement>
@@ -121,6 +124,27 @@
             <dependency>
                 <groupId>io.qameta.allure</groupId>
                 <artifactId>allure-selenide</artifactId>
+                <version>${allure.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.cucumber</groupId>
+                <artifactId>cucumber-java</artifactId>
+                <version>${cucumber.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.cucumber</groupId>
+                <artifactId>cucumber-junit-platform-engine</artifactId>
+                <version>${cucumber.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.junit.platform</groupId>
+                <artifactId>junit-platform-suite</artifactId>
+                <version>1.10.1</version>
+            </dependency>
+            <dependency>
+                <groupId>io.qameta.allure</groupId>
+                <artifactId>allure-cucumber7-jvm</artifactId>
                 <version>${allure.version}</version>
             </dependency>
         </dependencies>
