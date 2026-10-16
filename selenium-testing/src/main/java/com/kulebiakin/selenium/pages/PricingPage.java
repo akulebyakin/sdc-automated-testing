@@ -14,6 +14,7 @@ import java.util.List;
 public class PricingPage extends BasePage {
 
     private static final String PRICING_PAGE_URL = "https://www.inmotionhosting.com/pricing";
+    private static final String RENEWAL_PRICE_XPATH = "//*[contains(text(), 'enews') or contains(text(), 'RENEWS')]";
 
     @FindBy(xpath = "//button[contains(., 'VPS Hosting')]")
     private WebElement vpsHostingTab;
@@ -119,6 +120,17 @@ public class PricingPage extends BasePage {
         return this;
     }
 
+    @Step("Select hosting tab by type")
+    public PricingPage selectHostingTab(HostingType hostingType) {
+        return switch (hostingType) {
+            case VPS_HOSTING -> selectVpsHostingTab();
+            case DEDICATED_SERVERS -> selectDedicatedServersTab();
+            case WORDPRESS_HOSTING -> selectWordPressHostingTab();
+            case SHARED_HOSTING -> selectSharedHostingTab();
+            case RESELLER_HOSTING -> selectResellerHostingTab();
+        };
+    }
+
     @Step("Check if page heading is displayed")
     public boolean isPageHeadingDisplayed() {
         return isDisplayed(pageHeading);
@@ -176,33 +188,13 @@ public class PricingPage extends BasePage {
 
     @Step("Get first visible price")
     public String getFirstVisiblePrice() {
-        try {
-            // Try multiple selectors for price elements
-            List<WebElement> priceElements = driver.findElements(
-                By.xpath("//table//th//*[contains(text(), '$')]")
-            );
-            for (WebElement el : priceElements) {
-                if (el.isDisplayed()) {
-                    String text = el.getText();
-                    if (text.contains("$") && text.contains("/mo")) {
-                        return text;
-                    }
-                }
-            }
-            // Fallback: look for any price-like text
-            priceElements = driver.findElements(By.xpath("//*[contains(text(), '/mo')]"));
-            for (WebElement el : priceElements) {
-                if (el.isDisplayed()) {
-                    String text = el.getText();
-                    if (text.contains("$")) {
-                        return text;
-                    }
-                }
-            }
-            return "";
-        } catch (Exception e) {
-            return "";
-        }
+        return driver.findElements(By.xpath("//span[contains(@class, 'rostrum-price')]"))
+            .stream()
+            .filter(WebElement::isDisplayed)
+            .map(WebElement::getText)
+            .filter(text -> !text.isEmpty())
+            .findFirst()
+            .orElse("");
     }
 
     @Step("Get first Select button href")
@@ -249,5 +241,26 @@ public class PricingPage extends BasePage {
         click(firstButton);
         waitForUrlContains("checkout");
         log.info("Navigated to checkout page");
+    }
+
+    @Step("Get visible renewal price elements info")
+    public List<String> getVisibleRenewalPriceElementsInfo() {
+        return driver.findElements(By.xpath(RENEWAL_PRICE_XPATH)).stream()
+            .filter(WebElement::isDisplayed)
+            .map(WebElement::getText)
+            .toList();
+    }
+
+    @Step("Check if renewal prices are visible")
+    public boolean hasVisibleRenewalPrices() {
+        return driver.findElements(By.xpath(RENEWAL_PRICE_XPATH)).stream()
+            .anyMatch(WebElement::isDisplayed);
+    }
+
+    @Step("Check if savings information is displayed")
+    public boolean hasSavingsInfo() {
+        return driver.findElements(
+            By.xpath("//*[contains(text(), 'Save') or contains(text(), 'save') or contains(text(), '% off')]")
+        ).stream().anyMatch(WebElement::isDisplayed);
     }
 }

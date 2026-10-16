@@ -2,14 +2,17 @@ package com.kulebiakin.selenium.pages;
 
 import lombok.extern.slf4j.Slf4j;
 import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.time.Duration;
 import java.util.Objects;
+import java.util.Set;
 
 @Slf4j
 public abstract class BasePage {
@@ -93,8 +96,49 @@ public abstract class BasePage {
     protected void waitForPageLoad() {
         log.debug("Waiting for page to fully load");
         wait.until(webDriver ->
-            Objects.equals(((JavascriptExecutor) webDriver)
-                .executeScript("return document.readyState"), "complete")
+            Objects.equals(((JavascriptExecutor) webDriver).executeScript("return document.readyState"),
+                "complete")
         );
+    }
+
+    protected void hoverOver(WebElement element) {
+        log.debug("Hovering over element");
+        Actions actions = new Actions(driver);
+        actions.moveToElement(waitForVisibility(element)).perform();
+    }
+
+    protected String getWindowHandle() {
+        return driver.getWindowHandle();
+    }
+
+    protected void switchToNewTab(String originalHandle) {
+        log.debug("Switching to new tab");
+        wait.until(d -> d.getWindowHandles().size() > 1);
+        Set<String> handles = driver.getWindowHandles();
+        for (String handle : handles) {
+            if (!handle.equals(originalHandle)) {
+                driver.switchTo().window(handle);
+                waitForPageLoad();
+                break;
+            }
+        }
+    }
+
+    protected void closeCurrentTabAndSwitchTo(String targetHandle) {
+        log.debug("Closing current tab and switching to target handle");
+        driver.close();
+        driver.switchTo().window(targetHandle);
+    }
+
+    protected void handleAlert() {
+        log.debug("Attempting to handle alert");
+        try {
+            WebDriverWait alertWait = new WebDriverWait(driver, Duration.ofSeconds(3));
+            alertWait.until(ExpectedConditions.alertIsPresent());
+            driver.switchTo().alert().accept();
+            log.debug("Alert accepted");
+        } catch (TimeoutException e) {
+            log.debug("No alert present");
+        }
     }
 }
